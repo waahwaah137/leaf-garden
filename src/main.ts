@@ -33,6 +33,7 @@ const orientation = new OrientationSensor();
 
 const videoEl = document.getElementById('camera-preview') as HTMLVideoElement;
 const switchCameraButton = document.getElementById('switch-camera-button') as HTMLButtonElement;
+const bankSelect = document.getElementById('bank-select') as HTMLSelectElement;
 const randomizeButton = document.getElementById('randomize-button') as HTMLButtonElement;
 const recordButton = document.getElementById('record-button') as HTMLButtonElement;
 const downloadButton = document.getElementById('download-button') as HTMLButtonElement;
@@ -65,6 +66,7 @@ function onExperienceReady(result: StartFlowResult): void {
   videoEl.classList.toggle('mirrored', leaf.getFacingMode() === 'user');
 
   createLeafscape();
+  populateBankSelect();
   buildControls();
   wireActions();
   goImmersive();
@@ -76,6 +78,32 @@ function pct(v: number): string {
   return `${Math.round(v * 100)}`;
 }
 
+/** Fills the top-right dropdown with banks grouped by their category, and wires selection. */
+function populateBankSelect(): void {
+  const groups = new Map<string, typeof BANKS>();
+  for (const b of BANKS) {
+    if (!groups.has(b.group)) groups.set(b.group, []);
+    groups.get(b.group)!.push(b);
+  }
+  bankSelect.innerHTML = '';
+  for (const [group, banks] of groups) {
+    const og = document.createElement('optgroup');
+    og.label = group;
+    for (const b of banks) {
+      const opt = document.createElement('option');
+      opt.value = b.id;
+      opt.textContent = b.name;
+      og.appendChild(opt);
+    }
+    bankSelect.appendChild(og);
+  }
+  bankSelect.value = getLeafscapeState()?.bankId ?? BANKS[0].id;
+  bankSelect.addEventListener('change', () => {
+    setBank(bankSelect.value);
+    syncBankDependents();
+  });
+}
+
 function buildControls(): void {
   const grid = getKnobGrid();
   const state = getLeafscapeState();
@@ -85,15 +113,12 @@ function buildControls(): void {
     grid.appendChild(k.el);
   };
 
+  // Volume takes the first slot (the bank selector moved to the top-right dropdown).
   add(
-    'bank',
+    'volume',
     new Knob({
-      label: 'bank', min: 0, max: BANKS.length - 1, step: 1, value: 0, color: 'var(--yellow)',
-      format: (v) => BANKS[Math.round(v)].name,
-      onChange: (v) => {
-        setBank(BANKS[Math.round(v)].id);
-        syncBankDependents();
-      },
+      label: 'volume', min: 0, max: 1, value: getDefaultVolume(), default: getDefaultVolume(), color: 'var(--teal)',
+      format: pct, onChange: (v) => setMasterVolume(v),
     }),
   );
   add(
@@ -148,13 +173,6 @@ function buildControls(): void {
       format: pct, onChange: (v) => leaf.setSensitivity(v),
     }),
   );
-  add(
-    'volume',
-    new Knob({
-      label: 'volume', min: 0, max: 1, value: getDefaultVolume(), default: getDefaultVolume(), color: 'var(--teal)',
-      format: pct, onChange: (v) => setMasterVolume(v),
-    }),
-  );
 
   // Apply initial values that the engine doesn't already default to.
   leaf.setSensitivity(0.6);
@@ -172,8 +190,10 @@ function syncBankDependents(): void {
 
 function wireActions(): void {
   randomizeButton.addEventListener('click', () => {
-    knobs.bank?.setValue(Math.floor(Math.random() * BANKS.length)); // emits -> setBank + sync
-    knobs.mode?.setValue(Math.floor(Math.random() * MODE_NAMES.length));
+    const bank = BANKS[Math.floor(Math.random() * BANKS.length)];
+    bankSelect.value = bank.id;
+    setBank(bank.id);
+    syncBankDependents();
     knobs.pitch?.setValue(Math.round((Math.random() - 0.5) * 14));
     knobs.freq?.setValue(0.3 + Math.random() * 0.6);
     knobs.space?.setValue(0.3 + Math.random() * 0.6);

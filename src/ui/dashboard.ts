@@ -4,7 +4,6 @@ import { drawTrackingOverlay } from './overlay';
 interface Elements {
   overlayCanvas: HTMLCanvasElement;
   overlayCtx: CanvasRenderingContext2D;
-  hudBank: HTMLElement;
   hudMetric: HTMLElement;
   hudCv: HTMLElement;
   controls: HTMLElement;
@@ -29,7 +28,6 @@ export function initDashboard(): void {
   els = {
     overlayCanvas,
     overlayCtx,
-    hudBank: byId('hud-bank'),
     hudMetric: byId('hud-metric'),
     hudCv: byId('hud-cv'),
     controls: byId('controls'),
@@ -37,10 +35,11 @@ export function initDashboard(): void {
     stage: byId('stage'),
   };
 
-  // Tap anywhere on the stage (but not on the controls themselves) to toggle the sheet.
+  // Tap anywhere on the stage (but not on the controls or the bank menu) to toggle the sheet.
   els.stage.addEventListener('click', (e) => {
     if (!els) return;
     const target = e.target as HTMLElement;
+    if (target.closest('#bank-select')) return; // native dropdown handles itself
     if (target.closest('#controls')) {
       scheduleAutoHide(); // interacting keeps it open
       return;
@@ -97,7 +96,6 @@ export interface DashboardState {
 export function render(state: DashboardState, leaf: LeafSensor): void {
   if (!els) return;
 
-  els.hudBank.textContent = state.bankName;
   const shape = state.spikiness >= 0.5 ? 'sharp' : 'round';
   els.hudMetric.textContent = `${shape} ${state.spikiness.toFixed(2)} · ${Math.round(state.plantPresence * 100)}%`;
   els.hudCv.textContent = state.usingCv ? 'tracking' : 'heuristic';

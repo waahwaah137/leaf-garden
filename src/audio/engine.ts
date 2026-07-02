@@ -2,8 +2,9 @@ import * as Tone from 'tone';
 import { clamp } from '../utils/math';
 
 const BASE_BPM = 74;
-const DEFAULT_VOLUME = 0.8;
+const DEFAULT_VOLUME = 1.0;
 const VOLUME_RAMP_SECONDS = 0.05;
+const MAKEUP_GAIN_DB = 11; // overall loudness boost; the limiter below catches peaks
 
 export let masterBus: Tone.Gain;
 
@@ -15,8 +16,14 @@ export async function initEngine(): Promise<void> {
   await Tone.start();
 
   masterBus = new Tone.Gain(DEFAULT_VOLUME);
-  const compressor = new Tone.Compressor({ threshold: -12, ratio: 3, attack: 0.01, release: 0.2 });
+  const compressor = new Tone.Compressor({ threshold: -18, ratio: 3, attack: 0.01, release: 0.2 });
+  // Makeup gain lifts the overall level (the mix was too quiet), followed by a fast
+  // brickwall limiter so the extra gain never clips the output.
+  const makeup = new Tone.Gain(Tone.dbToGain(MAKEUP_GAIN_DB));
+  const limiter = new Tone.Compressor({ threshold: -1.5, ratio: 20, attack: 0.002, release: 0.1 });
   masterBus.connect(compressor);
+  compressor.connect(makeup);
+  makeup.connect(limiter);
 
   // iOS Safari routes plain Web Audio output (Tone.Destination) to the quiet
   // earpiece speaker instead of the main loudspeaker as soon as the mic is
@@ -27,7 +34,7 @@ export async function initEngine(): Promise<void> {
   // than connecting straight to Tone.Destination.
   const rawContext = Tone.getContext().rawContext as AudioContext;
   const streamDestination = rawContext.createMediaStreamDestination();
-  compressor.connect(streamDestination);
+  limiter.connect(streamDestination);
 
   const outputEl = document.createElement('audio');
   outputEl.autoplay = true;
