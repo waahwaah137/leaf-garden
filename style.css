@@ -97,14 +97,18 @@ body {
   color: var(--teal);
 }
 
-/* Matches the control-sheet button language (uppercase teal pill on frosted purple). */
+/* ---------- Custom DAW-style bank selector ---------- */
 .bank-select {
   position: absolute;
   top: max(0.9rem, env(safe-area-inset-top));
   right: max(0.9rem, env(safe-area-inset-right));
-  z-index: 4;
-  appearance: none;
-  -webkit-appearance: none;
+  z-index: 5;
+}
+
+.bank-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
   font-family: inherit;
   font-size: 0.68rem;
   font-weight: 600;
@@ -114,22 +118,102 @@ body {
   background: rgba(24, 6, 24, 0.6);
   border: 1px solid rgba(0, 224, 186, 0.5);
   border-radius: 999px;
-  padding: 0.45rem 1.8rem 0.45rem 0.9rem;
+  padding: 0.45rem 0.9rem;
   backdrop-filter: blur(8px);
   cursor: pointer;
-  max-width: 52vw;
-  /* chevron */
-  background-image: linear-gradient(45deg, transparent 50%, var(--teal) 50%),
-    linear-gradient(135deg, var(--teal) 50%, transparent 50%);
-  background-position: calc(100% - 16px) 52%, calc(100% - 11px) 52%;
-  background-size: 5px 5px, 5px 5px;
-  background-repeat: no-repeat;
+  max-width: 60vw;
 }
 
-.bank-select option,
-.bank-select optgroup {
-  color: #eafff8;
-  background: #14060f;
+.bank-trigger-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bank-chevron {
+  font-size: 0.7rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.bank-select.open .bank-chevron {
+  transform: rotate(180deg);
+}
+
+.bank-panel {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  width: 224px;
+  max-height: min(62vh, 440px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: rgba(20, 6, 15, 0.92);
+  border: 1px solid rgba(145, 0, 141, 0.5);
+  border-radius: 14px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55);
+  padding: 0.3rem 0;
+  display: none;
+}
+
+.bank-select.open .bank-panel {
+  display: block;
+}
+
+.bank-group {
+  padding: 0.55rem 0.9rem 0.3rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #a06fb0;
+}
+
+.bank-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: transparent;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  color: #d8e6df;
+  font-family: inherit;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 0.7rem 0.9rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.bank-group + .bank-item {
+  border-top: none;
+}
+
+.bank-item:hover {
+  background: rgba(0, 224, 186, 0.08);
+}
+
+.bank-item.active {
+  color: var(--teal);
+  background: rgba(0, 224, 186, 0.1);
+}
+
+.bank-led {
+  flex-shrink: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: transparent;
+}
+
+.bank-item.active .bank-led {
+  background: var(--teal);
+  border-color: var(--teal);
+  box-shadow: 0 0 8px var(--teal), 0 0 3px var(--teal);
 }
 
 .controls-toggle {
@@ -280,7 +364,11 @@ body {
   align-items: center;
   justify-content: center;
   padding: 1.6rem;
-  background: #060b09;
+  /* scrim (for text legibility) over the photo, over the base colour (fallback) */
+  background:
+    linear-gradient(180deg, rgba(6, 11, 9, 0.35) 0%, rgba(6, 11, 9, 0.5) 45%, rgba(6, 11, 9, 0.82) 100%),
+    var(--start-photo, none) center / cover no-repeat,
+    #060b09;
   z-index: 10;
   overflow: hidden;
   transition: opacity 0.4s ease;
@@ -304,12 +392,13 @@ body {
   filter: blur(60px);
 }
 
+/* Subtle — the photo already carries most of the atmosphere. */
 .glow-green {
   width: 70vw;
   height: 70vw;
   top: -18vw;
   left: -20vw;
-  background: radial-gradient(circle, rgba(0, 224, 186, 0.28), transparent 62%);
+  background: radial-gradient(circle, rgba(0, 224, 186, 0.14), transparent 62%);
 }
 
 .glow-purple {
@@ -317,7 +406,7 @@ body {
   height: 65vw;
   right: -22vw;
   top: 8vh;
-  background: radial-gradient(circle, rgba(145, 0, 141, 0.42), transparent 62%);
+  background: radial-gradient(circle, rgba(145, 0, 141, 0.2), transparent 62%);
 }
 
 .ripple-arcs {
@@ -326,7 +415,7 @@ body {
   top: 6%;
   width: 70%;
   height: 60%;
-  opacity: 0.6;
+  opacity: 0.3;
 }
 
 .start-content {

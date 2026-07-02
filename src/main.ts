@@ -23,10 +23,17 @@ import { MicSensor } from './sensors/micSensor';
 import { OrientationSensor } from './sensors/orientationSensor';
 import { loadOpenCv } from './vision/opencvLoader';
 import { Knob } from './ui/knob';
+import { createBankSelect, type BankSelectHandle } from './ui/bankSelect';
 import { addRipple } from './ui/overlay';
 import { clamp, lerp } from './utils/math';
 import { initDashboard, render, setSensorStatus, hideControls, getKnobGrid } from './ui/dashboard';
 import { attachStartButton, type StartFlowResult } from './ui/permissions';
+
+// Photo background for the welcome screen (base-path aware; falls back to the CSS glows if
+// the file isn't present). Save the image at public/soundGardenScape_1.jpg.
+document
+  .getElementById('start-overlay')
+  ?.style.setProperty('--start-photo', `url(${import.meta.env.BASE_URL}soundGardenScape_1.jpg)`);
 
 const leaf = new LeafSensor();
 // Mic + orientation are still acquired at start (the combined camera+mic getUserMedia keeps
@@ -37,7 +44,6 @@ const orientation = new OrientationSensor();
 const stage = document.getElementById('stage') as HTMLElement;
 const videoEl = document.getElementById('camera-preview') as HTMLVideoElement;
 const switchCameraButton = document.getElementById('switch-camera-button') as HTMLButtonElement;
-const bankSelect = document.getElementById('bank-select') as HTMLSelectElement;
 const randomizeButton = document.getElementById('randomize-button') as HTMLButtonElement;
 const recordButton = document.getElementById('record-button') as HTMLButtonElement;
 const downloadButton = document.getElementById('download-button') as HTMLButtonElement;
@@ -63,6 +69,7 @@ switchCameraButton.addEventListener('click', async () => {
 attachStartButton({ light: leaf, mic, orientation, videoEl }, onExperienceReady);
 
 const knobs: Record<string, Knob> = {};
+let bankSelect: BankSelectHandle;
 
 function onExperienceReady(result: StartFlowResult): void {
   setSensorStatus(result);
@@ -70,7 +77,14 @@ function onExperienceReady(result: StartFlowResult): void {
   videoEl.classList.toggle('mirrored', leaf.getFacingMode() === 'user');
 
   createLeafscape();
-  populateBankSelect();
+  bankSelect = createBankSelect({
+    currentId: getLeafscapeState()?.bankId ?? BANKS[0].id,
+    onSelect: (id) => {
+      setBank(id);
+      syncBankDependents();
+    },
+  });
+  stage.appendChild(bankSelect.el);
   buildControls();
   wireActions();
   attachTapToPlay();
@@ -130,32 +144,6 @@ function onStageTap(mx: number, ny: number): void {
 
 function pct(v: number): string {
   return `${Math.round(v * 100)}`;
-}
-
-/** Fills the top-right dropdown with banks grouped by their category, and wires selection. */
-function populateBankSelect(): void {
-  const groups = new Map<string, typeof BANKS>();
-  for (const b of BANKS) {
-    if (!groups.has(b.group)) groups.set(b.group, []);
-    groups.get(b.group)!.push(b);
-  }
-  bankSelect.innerHTML = '';
-  for (const [group, banks] of groups) {
-    const og = document.createElement('optgroup');
-    og.label = group;
-    for (const b of banks) {
-      const opt = document.createElement('option');
-      opt.value = b.id;
-      opt.textContent = b.name;
-      og.appendChild(opt);
-    }
-    bankSelect.appendChild(og);
-  }
-  bankSelect.value = getLeafscapeState()?.bankId ?? BANKS[0].id;
-  bankSelect.addEventListener('change', () => {
-    setBank(bankSelect.value);
-    syncBankDependents();
-  });
 }
 
 function buildControls(): void {
@@ -245,7 +233,7 @@ function syncBankDependents(): void {
 function wireActions(): void {
   randomizeButton.addEventListener('click', () => {
     const bank = BANKS[Math.floor(Math.random() * BANKS.length)];
-    bankSelect.value = bank.id;
+    bankSelect.setValue(bank.id);
     setBank(bank.id);
     syncBankDependents();
     knobs.pitch?.setValue(Math.round((Math.random() - 0.5) * 14));
