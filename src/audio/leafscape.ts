@@ -139,7 +139,7 @@ class LeafscapeEngine {
     emitNote({ voice: 'sharp', velocity });
   }
 
-  update(spikiness: number, presence: number, spatial: Spatial): void {
+  update(spikiness: number, presence: number, spatial: Spatial, accent = 0): void {
     this.spatial = spatial;
     const s = clamp(spikiness, 0, 1);
 
@@ -163,8 +163,30 @@ class LeafscapeEngine {
     // Average leaf x-position → stereo pan.
     this.panner.pan.rampTo(clamp((spatial.avgX - 0.5) * 2, -1, 1), RAMP);
 
-    // Presence gate: fade the whole scene with how much plant is visible.
-    this.gate.gain.rampTo(smoothstep(0.02, 0.16, presence), RAMP);
+    // Presence gate: fade the whole scene with how much plant is visible. A deliberate tap
+    // (accent) lifts the floor so the influenced sound is audible even with little plant in frame.
+    const gateLevel = Math.max(smoothstep(0.02, 0.16, presence), accent * 0.85);
+    this.gate.gain.rampTo(gateLevel, RAMP);
+  }
+
+  /**
+   * Plays one soft note "at" a tapped leaf, routed through the live voices so it inherits the
+   * current pan/filter/reverb. Pointy taps ping the bright voice, round taps swell the pad.
+   */
+  pluck(spik: number): void {
+    const s = clamp(spik, 0, 1);
+    if (s >= 0.5) {
+      const [lo, hi] = this.bank.sharp.register;
+      const degree = lo + Math.floor(Math.random() * Math.max(1, hi - lo));
+      const midi = degreeToMidi(this.scale, degree) + this.transpose;
+      this.sharpVoice?.triggerAttackRelease(midiToNote(midi), '8n', undefined, 0.6);
+      emitNote({ voice: 'sharp', velocity: 0.7 });
+    } else {
+      const degree = this.bank.round.padDegrees[Math.floor(Math.random() * this.bank.round.padDegrees.length)];
+      const midi = degreeToMidi(this.scale, degree, this.bank.round.degreeOffset + this.scale.intervals.length) + this.transpose;
+      this.pad?.triggerAttackRelease(midiToNote(midi), '2n', undefined, 0.5);
+      emitNote({ voice: 'round', velocity: 0.6 });
+    }
   }
 
   // --- Live control setters (from the dials) -----------------------------------------
@@ -262,9 +284,17 @@ export function createLeafscape(): void {
   engine = new LeafscapeEngine();
 }
 
-export function updateLeafscape(spikiness: number, plantPresence: number, spatial: Spatial = NEUTRAL_SPATIAL): void {
-  engine?.update(spikiness, plantPresence, spatial);
+export function updateLeafscape(
+  spikiness: number,
+  plantPresence: number,
+  spatial: Spatial = NEUTRAL_SPATIAL,
+  accent = 0,
+): void {
+  engine?.update(spikiness, plantPresence, spatial, accent);
 }
+
+/** Plays a soft note at a tapped leaf (spik 0=round pad swell, 1=bright ping). */
+export const pluckLeafscape = (spik: number) => engine?.pluck(spik);
 
 export function getVoiceLevels(): { round: number; sharp: number } {
   return { round: engine?.roundLevel ?? 0, sharp: engine?.sharpLevel ?? 0 };

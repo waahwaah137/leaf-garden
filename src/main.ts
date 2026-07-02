@@ -16,12 +16,15 @@ import {
   stopRecordingAndLoop,
   isRecording,
   getLastRecording,
+  pluckLeafscape,
 } from './audio/leafscape';
 import { LeafSensor } from './sensors/leafSensor';
 import { MicSensor } from './sensors/micSensor';
 import { OrientationSensor } from './sensors/orientationSensor';
 import { loadOpenCv } from './vision/opencvLoader';
 import { Knob } from './ui/knob';
+import { addRipple } from './ui/overlay';
+import { clamp, lerp } from './utils/math';
 import { initDashboard, render, setSensorStatus, hideControls, getKnobGrid } from './ui/dashboard';
 import { attachStartButton, type StartFlowResult } from './ui/permissions';
 
@@ -31,6 +34,7 @@ const leaf = new LeafSensor();
 const mic = new MicSensor();
 const orientation = new OrientationSensor();
 
+const stage = document.getElementById('stage') as HTMLElement;
 const videoEl = document.getElementById('camera-preview') as HTMLVideoElement;
 const switchCameraButton = document.getElementById('switch-camera-button') as HTMLButtonElement;
 const bankSelect = document.getElementById('bank-select') as HTMLSelectElement;
@@ -69,9 +73,59 @@ function onExperienceReady(result: StartFlowResult): void {
   populateBankSelect();
   buildControls();
   wireActions();
+  attachTapToPlay();
   goImmersive();
 
   requestAnimationFrame(tick);
+}
+
+// --- Tap-to-play: taps bias the audio toward the tapped leaf and ripple on screen ----------
+const focus = { x: 0.5, y: 0.5, strength: 0, spik: 0 };
+const FOCUS_DECAY_MS = 2500;
+const FOCUS_WEIGHT = 0.85; // how far a deliberate tap pushes pointiness toward the tapped leaf
+
+function attachTapToPlay(): void {
+  stage.addEventListener('pointerdown', (e) => {
+    const target = e.target as HTMLElement;
+    // Ignore taps on UI chrome — those aren't "playing the leaves".
+    if (
+      target.closest('#controls') ||
+      target.closest('#bank-select') ||
+      target.closest('.hud') ||
+      target.closest('#controls-toggle')
+    ) {
+      return;
+    }
+    const rect = stage.getBoundingClientRect();
+    const nx = clamp((e.clientX - rect.left) / rect.width, 0, 1);
+    const ny = clamp((e.clientY - rect.top) / rect.height, 0, 1);
+    // Front camera is CSS-mirrored, so flip x to match the boxes/overlay under the finger.
+    const mx = leaf.getFacingMode() === 'user' ? 1 - nx : nx;
+    onStageTap(mx, ny);
+  });
+}
+
+function onStageTap(mx: number, ny: number): void {
+  const boxes = leaf.getLeafBoxes();
+  let nearest: { spikiness: number } | null = null;
+  let bestD = Infinity;
+  for (const b of boxes) {
+    const cx = b.x + b.w / 2;
+    const cy = b.y + b.h / 2;
+    const d = (cx - mx) ** 2 + (cy - ny) ** 2;
+    if (d < bestD) {
+      bestD = d;
+      nearest = b;
+    }
+  }
+  // Use the tapped leaf's own pointiness when close enough; otherwise the global reading.
+  const spik = nearest && bestD < 0.05 ? nearest.spikiness : leaf.getSpikiness();
+  focus.x = mx;
+  focus.y = ny;
+  focus.strength = 1;
+  focus.spik = spik;
+  addRipple(mx, ny, spik);
+  pluckLeafscape(spik);
 }
 
 function pct(v: number): string {
@@ -250,20 +304,32 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && !wakeLock) requestWakeLock();
 });
 
+let lastNow = 0;
+
 function tick(now: number): void {
   leaf.update(now);
 
-  const spikiness = leaf.getSpikiness();
+  const dt = lastNow ? now - lastNow : 16;
+  lastNow = now;
+  if (focus.strength > 0) focus.strength = Math.max(0, focus.strength - dt / FOCUS_DECAY_MS);
+
+  const globalSpik = leaf.getSpikiness();
   const plantPresence = leaf.getPlantPresence();
-  updateLeafscape(spikiness, plantPresence, leaf.getSpatial());
+  const spatial = leaf.getSpatial();
+
+  // Blend toward the tapped leaf while the focus is active; relax to ambient as it decays.
+  const effSpik = lerp(globalSpik, focus.spik, focus.strength * FOCUS_WEIGHT);
+  const effSpatial = { ...spatial, avgX: lerp(spatial.avgX, focus.x, focus.strength) };
+  updateLeafscape(effSpik, plantPresence, effSpatial, focus.strength);
 
   render(
     {
-      spikiness,
-      roundness: leaf.getRoundness(),
+      spikiness: effSpik,
+      roundness: 1 - effSpik,
       plantPresence,
       bankName: getLeafscapeState()?.bankName ?? '',
       usingCv: leaf.isUsingCv(),
+      focus: { x: focus.x, y: focus.y, strength: focus.strength },
     },
     leaf,
   );

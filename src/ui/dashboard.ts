@@ -1,5 +1,5 @@
 import type { LeafSensor } from '../sensors/leafSensor';
-import { drawTrackingOverlay } from './overlay';
+import { drawTrackingOverlay, type FocusMarker } from './overlay';
 
 interface Elements {
   overlayCanvas: HTMLCanvasElement;
@@ -7,7 +7,7 @@ interface Elements {
   hudMetric: HTMLElement;
   hudCv: HTMLElement;
   controls: HTMLElement;
-  tapHint: HTMLElement;
+  toggleBtn: HTMLButtonElement;
   stage: HTMLElement;
 }
 
@@ -31,21 +31,14 @@ export function initDashboard(): void {
     hudMetric: byId('hud-metric'),
     hudCv: byId('hud-cv'),
     controls: byId('controls'),
-    tapHint: byId('tap-hint'),
+    toggleBtn: byId<HTMLButtonElement>('controls-toggle'),
     stage: byId('stage'),
   };
 
-  // Tap anywhere on the stage (but not on the controls or the bank menu) to toggle the sheet.
-  els.stage.addEventListener('click', (e) => {
-    if (!els) return;
-    const target = e.target as HTMLElement;
-    if (target.closest('#bank-select')) return; // native dropdown handles itself
-    if (target.closest('#controls')) {
-      scheduleAutoHide(); // interacting keeps it open
-      return;
-    }
-    toggleControls();
-  });
+  // Dedicated button toggles the sheet (screen taps are reserved for playing the leaves).
+  els.toggleBtn.addEventListener('click', () => toggleControls());
+  // Keep the sheet open while the user is turning knobs inside it.
+  els.controls.addEventListener('pointerdown', () => scheduleAutoHide());
 }
 
 function scheduleAutoHide(): void {
@@ -62,13 +55,14 @@ export function toggleControls(): void {
 export function showControls(): void {
   if (!els) return;
   els.controls.classList.remove('hidden');
-  els.tapHint.classList.add('hidden');
+  els.toggleBtn.classList.add('active');
   scheduleAutoHide();
 }
 
 export function hideControls(): void {
   if (!els) return;
   els.controls.classList.add('hidden');
+  els.toggleBtn.classList.remove('active');
   window.clearTimeout(autoHideTimer);
 }
 
@@ -91,6 +85,7 @@ export interface DashboardState {
   plantPresence: number;
   bankName: string;
   usingCv: boolean;
+  focus?: FocusMarker;
 }
 
 export function render(state: DashboardState, leaf: LeafSensor): void {
@@ -109,7 +104,7 @@ export function render(state: DashboardState, leaf: LeafSensor): void {
     els.overlayCanvas.width = w;
     els.overlayCanvas.height = h;
   }
-  drawTrackingOverlay(els.overlayCtx, w, h, leaf);
+  drawTrackingOverlay(els.overlayCtx, w, h, leaf, state.focus);
 }
 
 export function getKnobGrid(): HTMLElement {
