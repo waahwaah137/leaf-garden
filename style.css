@@ -272,7 +272,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background: radial-gradient(120% 120% at 50% 20%, rgba(145, 0, 141, 0.5), rgba(11, 20, 16, 0.96));
+  background: var(--purple);
   z-index: 10;
   transition: opacity 0.4s ease;
 }
@@ -290,14 +290,11 @@ body {
 .start-card h1 {
   font-size: 2.4rem;
   margin: 0 0 0.6rem;
-  background: linear-gradient(90deg, var(--teal), var(--yellow), var(--pink));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--yellow);
 }
 
 .start-card p {
-  color: var(--text-dim);
+  color: #f2d9f0;
   line-height: 1.5;
   font-size: 0.95rem;
 }
@@ -307,7 +304,7 @@ body {
 }
 
 .start-card p strong:last-of-type {
-  color: var(--pink);
+  color: var(--yellow);
 }
 
 .start-hint {

@@ -59,7 +59,7 @@ export function drawTrackingOverlay(ctx: CanvasRenderingContext2D, w: number, h:
     }
   });
 
-  ctx.lineWidth = 1.25;
+  ctx.lineWidth = 2.25;
   ctx.font = '11px ui-monospace, "SF Mono", Menlo, monospace';
   ctx.lineJoin = 'round';
 
@@ -86,9 +86,9 @@ export function drawTrackingOverlay(ctx: CanvasRenderingContext2D, w: number, h:
 
     // Corner-bracket reticle (brighter, grows slightly with the pulse).
     ctx.globalAlpha = 0.95;
-    ctx.lineWidth = 1.6;
-    corners(ctx, x, y, bw, bh, 9 + pulse * 6);
-    ctx.lineWidth = 1.25;
+    ctx.lineWidth = 3.2;
+    corners(ctx, x, y, bw, bh, 10 + pulse * 6);
+    ctx.lineWidth = 2.25;
 
     // Pointiness tag.
     ctx.fillStyle = color;
