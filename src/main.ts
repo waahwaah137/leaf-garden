@@ -35,6 +35,11 @@ document
   .getElementById('start-overlay')
   ?.style.setProperty('--start-photo', `url(${import.meta.env.BASE_URL}soundGardenScape_1.png)`);
 
+// "?" about / how-to panel on the welcome screen.
+const aboutPanel = document.getElementById('about-panel');
+document.getElementById('about-toggle')?.addEventListener('click', () => aboutPanel?.classList.toggle('hidden'));
+document.getElementById('about-close')?.addEventListener('click', () => aboutPanel?.classList.add('hidden'));
+
 const leaf = new LeafSensor();
 // Mic + orientation are still acquired at start (the combined camera+mic getUserMedia keeps
 // iOS output on the main speaker), but the sound is driven entirely by leaf shape now.

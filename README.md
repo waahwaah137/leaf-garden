@@ -1,18 +1,33 @@
-# Leaf Garden 🌿🎶
+# 🌿 Leaf Garden — play music with plants
 
-A standalone web app that turns **plants into music**. Point your phone's camera at foliage:
-the app detects leaves (OpenCV), measures how **round vs. pointy** they are, and morphs a
-live generative soundscape:
+**Point your phone at a plant. Hear it sing.**
 
-- **Round leaves** → spacey, dark, ambient
-- **Pointy / sharp leaves** → bright, high-frequency shimmer
+Leaf Garden turns leaves into a living soundscape. Your camera looks at the greenery around
+you and *listens* to the shapes:
 
-Thin tracking boxes draw over each detected leaf (great on screen recordings), and a
-minimalist DAW-style dial panel lets you pick sound banks, shift pitch, and shape the mood
-in real time. Built to run **fully offline on a phone** (installable PWA) — perfect for a
-walk in the park.
+- 🍃 **Round leaves** → dreamy, spacey, ambient sounds
+- 🌱 **Pointy leaves** → bright, sparkly, high notes
 
-## Features
+Wander through a garden, a park, or your windowsill and the music shifts with every plant you
+find. No two bushes sound the same.
+
+## How to play
+1. **Open it** and tap **Start** (say yes to the camera 📷).
+2. **Aim** the back camera at some leaves — watch the little boxes track them and the sound bloom.
+3. **Tap a leaf on screen** to "pluck" it — the music leans toward whatever you touch, with a ripple to match. 👆
+4. **Tap "controls"** to open the dials: pick a **sound bank** (Spacey, Organic, Crystalline, Electronic), shift the **pitch**, add **space**, change the **mood**.
+5. **Hit record** to capture a loop and take it with you. 🎙️
+
+## Tips
+- 🎧 Headphones or a speaker make it shine.
+- ☀️ Good light = better leaf-tracking.
+- 📲 **Add it to your home screen** — it runs fullscreen and works offline, so it's perfect for a walk in the park.
+
+*Made to be wandered with. Go find a weird-looking plant.* ✨
+
+---
+
+## Features (under the hood)
 - **OpenCV leaf tracking** with an automatic pure-JS fallback if OpenCV can't load.
 - **12 sound banks** in 4 groups (Spacey / Organic / Crystalline / Electronic).
 - **Rotary dials**: Bank, Mode, Pitch, Freq (timbre), Space (reverb), Density, Tempo,

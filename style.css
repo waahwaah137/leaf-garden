@@ -595,3 +595,99 @@ body {
   color: #e7dff0;
   font-weight: 500;
 }
+
+/* ---------- "?" about / how-to panel ---------- */
+.about-toggle {
+  position: absolute;
+  top: max(0.9rem, env(safe-area-inset-top));
+  left: max(0.9rem, env(safe-area-inset-left));
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--teal);
+  background: rgba(6, 11, 9, 0.5);
+  border: 1px solid rgba(0, 224, 186, 0.55);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+}
+
+.about-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow-y: auto;
+  padding: 3rem 1.6rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0.3rem;
+  background: rgba(8, 5, 12, 0.94);
+  backdrop-filter: blur(18px);
+  color: #d8e6df;
+  transition: opacity 0.25s ease;
+}
+
+.about-panel.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.about-panel h2 {
+  margin: 0.2rem 0 0.1rem;
+  color: var(--yellow);
+  font-size: 1.5rem;
+}
+
+.about-panel h3 {
+  margin: 1.1rem 0 0.3rem;
+  color: var(--teal);
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.about-lead {
+  color: #b9a3d6;
+  margin: 0 0 0.6rem;
+}
+
+.about-panel ol,
+.about-panel ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.about-panel li {
+  margin-bottom: 0.35rem;
+}
+
+.about-panel b {
+  color: var(--teal);
+}
+
+.about-foot {
+  margin-top: 1.2rem;
+  color: #9a8fb0;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.about-close {
+  position: absolute;
+  top: 0.8rem;
+  right: 1rem;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: #d8e6df;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+}
