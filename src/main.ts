@@ -30,10 +30,10 @@ import { initDashboard, render, setSensorStatus, hideControls, getKnobGrid } fro
 import { attachStartButton, type StartFlowResult } from './ui/permissions';
 
 // Photo background for the welcome screen (base-path aware; falls back to the CSS glows if
-// the file isn't present). Save the image at public/soundGardenScape_1.jpg.
+// the file isn't present). Image lives at public/soundGardenScape_1.png.
 document
   .getElementById('start-overlay')
-  ?.style.setProperty('--start-photo', `url(${import.meta.env.BASE_URL}soundGardenScape_1.jpg)`);
+  ?.style.setProperty('--start-photo', `url(${import.meta.env.BASE_URL}soundGardenScape_1.png)`);
 
 const leaf = new LeafSensor();
 // Mic + orientation are still acquired at start (the combined camera+mic getUserMedia keeps
