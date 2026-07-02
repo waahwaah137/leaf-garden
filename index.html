@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#0b1410" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Leaf Garden — sound from plants</title>
+    <script type="module" crossorigin src="/leaf-garden/assets/index-p6p96Qta.js"></script>
+    <link rel="stylesheet" crossorigin href="/leaf-garden/assets/index-CPSuhd6E.css">
+  <link rel="manifest" href="/leaf-garden/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/leaf-garden/registerSW.js"></script>
+<meta name="theme-color" content="#91008d">
+<link rel="icon" href="/leaf-garden/favicon.ico" sizes="48x48">
+<link rel="icon" href="/leaf-garden/leaf.svg" sizes="any" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/leaf-garden/apple-touch-icon-180x180.png"></head>
+  <body>
+    <div id="stage" class="stage">
+      <video id="camera-preview" playsinline muted autoplay></video>
+      <canvas id="leaf-overlay" class="leaf-overlay"></canvas>
+
+      <div id="hud" class="hud">
+        <span id="hud-metric" class="hud-item">pointiness 0.00</span>
+        <span id="hud-cv" class="hud-badge">warming up…</span>
+      </div>
+
+      <select id="bank-select" class="bank-select" aria-label="sound bank"></select>
+
+      <div id="tap-hint" class="tap-hint">tap for controls</div>
+
+      <section id="controls" class="controls hidden" aria-label="controls">
+        <div id="knob-grid" class="knob-grid"></div>
+        <div class="control-actions">
+          <button id="randomize-button" class="round-button" title="Randomize">random</button>
+          <button id="record-button" class="round-button rec" title="Record a loop">rec</button>
+          <button id="download-button" class="round-button" title="Download last loop" disabled>save</button>
+          <button id="switch-camera-button" class="round-button" title="Switch camera" disabled>flip</button>
+        </div>
+      </section>
+    </div>
+
+    <div id="start-overlay" class="start-overlay">
+      <div class="start-card">
+        <h1>Leaf&nbsp;Garden</h1>
+        <p>
+          Point your camera at plants. <strong>Round</strong> leaves make spacey, ambient sound;
+          <strong>pointy</strong> leaves make bright, high-frequency sound. Tap the screen to reveal
+          the dials — pick a sound bank, shift pitch, and shape the mood.
+        </p>
+        <button id="start-button" type="button">Start</button>
+        <p class="start-hint">uses your camera &amp; speaker · best with the rear camera</p>
+      </div>
+    </div>
+
+  </body>
+</html>
