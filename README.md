@@ -11,6 +11,10 @@ you and *listens* to the shapes:
 Wander through a garden, a park, or your windowsill and the music shifts with every plant you
 find. No two bushes sound the same.
 
+> **Versions** · **1.0** — the current, live app (round vs. pointy leaves → the soundscape).
+> **2.0** — planned redesign that reads each leaf's **shape and color** instead. See the
+> roadmap in [`v2.0/README.md`](v2.0/README.md).
+
 ## How to play
 1. **Open it** and tap **Start** (say yes to the camera 📷).
 2. **Aim** the back camera at some leaves — watch the little boxes track them and the sound bloom.
