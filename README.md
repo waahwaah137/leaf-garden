@@ -11,9 +11,12 @@ you and *listens* to the shapes:
 Wander through a garden, a park, or your windowsill and the music shifts with every plant you
 find. No two bushes sound the same.
 
-> **Versions** · **1.0** — the current, live app (round vs. pointy leaves → the soundscape).
-> **2.0** — planned redesign that reads each leaf's **shape and color** instead. See the
-> roadmap in [`v2.0/README.md`](v2.0/README.md).
+> **Versions** · **1.0** (this repo) — the stable app, live at
+> [waahwaah137.github.io/leaf-garden](https://waahwaah137.github.io/leaf-garden/).
+> **2.0** — the shape + color redesign, developed in its own repo
+> [waahwaah137/leaf-garden-2](https://github.com/waahwaah137/leaf-garden-2)
+> (live at [waahwaah137.github.io/leaf-garden-2](https://waahwaah137.github.io/leaf-garden-2/)).
+> Roadmap: [`v2.0/README.md`](v2.0/README.md).
 
 ## How to play
 1. **Open it** and tap **Start** (say yes to the camera 📷).
